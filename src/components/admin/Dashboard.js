@@ -13,6 +13,7 @@ export default class Admin extends Component {
         this.props.history.push('/admin');
     }
     render() {
+        localStorage.setItem('current_location', this.props.location.pathname);
         let userToken = localStorage.getItem('admin_access_token');
         if (userToken == "") {
             return <Redirect to="/admin" />

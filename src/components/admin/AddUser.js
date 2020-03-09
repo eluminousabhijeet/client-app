@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
+import Navbar from '../layouts/Navbar';
+import Footer from '../layouts/Footer';
 import { Link, Redirect } from 'react-router-dom';
+import './style.scss';
 
 const emailRegx = RegExp(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/);
 const phoneRegx = RegExp(/^[0]?[789]\d{9}$/);
@@ -19,11 +22,12 @@ const formValid = ({ formErrors, ...rest }) => {
     return valid;
 }
 
-export default class Register extends Component {
+export default class AddUser extends Component {
     constructor(props) {
         super(props);
         let loggedIn = false;
         this.state = {
+            role: '',
             firstname: '',
             lastname: '',
             email: '',
@@ -31,6 +35,7 @@ export default class Register extends Component {
             contact: '',
             gender: '',
             formErrors: {
+                role: '',
                 firstname: '',
                 lastname: '',
                 email: '',
@@ -40,7 +45,6 @@ export default class Register extends Component {
                 password: '',
                 confpassword: ''
             },
-            role: 'buyer',
             password: '',
             confpassword: '',
             items: '',
@@ -57,6 +61,10 @@ export default class Register extends Component {
         let formErrors = this.state.formErrors;
 
         switch (name) {
+            case 'role':
+                formErrors.role = value.length < 3 == "" ? '' : "Please select role.";
+                break;
+
             case 'firstname':
                 formErrors.firstname = value.length < 3 ? 'minimum 3 characters required.' : "";
                 break;
@@ -100,39 +108,44 @@ export default class Register extends Component {
         e.preventDefault();
         const { name, value } = e.target;
         let formErrors = this.state.formErrors;
-        const  {firstname, lastname, username, email, contact, gender, password, confpassword} = this.state;
-        if(firstname == ""){
+        const { role, firstname, lastname, username, email, contact, gender, password, confpassword } = this.state;
+        if (role == "") {
+            formErrors.role = "This is required.";
+        }
+        if (firstname == "") {
             formErrors.firstname = "This is required.";
         }
-        if(lastname == ""){
+        if (lastname == "") {
             formErrors.lastname = "This is required.";
         }
-        if(username == ""){
+        if (username == "") {
             formErrors.username = "This is required.";
         }
-        if(email == ""){
+        if (email == "") {
             formErrors.email = "This is required.";
         }
-        if(contact == ""){
+        if (contact == "") {
             formErrors.contact = "This is required.";
         }
-        if(gender == ""){
+        if (gender == "") {
             formErrors.gender = "This is required.";
         }
-        if(password == ""){
+        if (password == "") {
             formErrors.password = "This is required.";
         }
-        if(confpassword == ""){
+        if (confpassword == "") {
             formErrors.confpassword = "This is required.";
         }
         this.setState({ formErrors, [name]: value });
         if (formValid(this.state)) {
-            fetch('http://localhost:5000/user/signup', {
+            const token = localStorage.getItem('admin_access_token');
+            fetch('http://localhost:5000/admin/add-user', {
                 method: "POST",
                 contentType: "application/json; charset=utf-8",
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
+                    'Authorization': token
                 },
                 body: JSON.stringify({
                     firstname: this.state.firstname,
@@ -149,8 +162,9 @@ export default class Register extends Component {
                     let token = responseJson.token;
                     console.log(responseJson);
                     if (responseJson.success == 'true') {
-                        localStorage.setItem('access_token', token);
-                        this.props.history.push('/home', { userid: responseJson.userid });
+                        // localStorage.setItem('access_token', token);
+                        // this.props.history.push('/home', { userid: responseJson.userid });
+                        console.log('successss....');
                     } else {
                         this.setState({
                             errorMsg: responseJson.message
@@ -163,50 +177,59 @@ export default class Register extends Component {
     }
 
     render() {
+        localStorage.setItem('current_location', this.props.location.pathname);
         const { formErrors } = this.state;
-        let userToken = localStorage.getItem('user_access_token');
-        if (userToken !== "") {
-            return <Redirect to="/user-profile" />
+        let userToken = localStorage.getItem('admin_access_token');
+        if (userToken == "") {
+            return <Redirect to="/admin" />
         }
         return (
-            <div className="container">
-                <div className="header">
-                    Signup
+            <div className="main-container">
+                <div className="">
+                    <Navbar />
                 </div>
-                <div className="content">
-                    <div className="image-div">
-                        <img />
-                    </div>
-                    <div className="form-div">
-                        <div className="err-message auth-err">{this.state.errorMsg}</div>
+                <div className="container-fluid" style={{padding: "0em 10em 5em 10em"}}>
+                    <div>
                         <form onSubmit={this.submitForm}>
-                            <div className="row">
-                                <div className="col">
+                            <div className="form-row">
+                                <label htmlFor="role">Select role</label>
+                                <select name="role" className={formErrors.role.length > 0 ? "err-field form-control" : "form-control"} noValidate onChange={this.onChange}>
+                                    <option value="">Select Role</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="seller">Seller</option>
+                                    <option value="buyer">Buyer</option>
+                                </select>
+                                {formErrors.role.length > 0 && (
+                                    <span className="text-danger">{formErrors.role}</span>
+                                )}
+                            </div>
+                            <div className="form-group">
+                                <div className="form-row">
                                     <label htmlFor="firstname">First Name</label>
                                     <input
                                         type="text"
-                                        className={formErrors.firstname.length > 0 ? "err-field" : null}
+                                        className={formErrors.firstname.length > 0 ? "err-field form-control form-control" : "form-control"}
                                         placeholder="First Name"
                                         name="firstname"
                                         noValidate
                                         onChange={this.onChange}
                                     />
                                     {formErrors.firstname.length > 0 && (
-                                        <span className="err-message">{formErrors.firstname}</span>
+                                        <span className="text-danger">{formErrors.firstname}</span>
                                     )}
                                 </div>
-                                <div className="col">
+                                <div className="form-row">
                                     <label htmlFor="lastname">Last Name</label>
                                     <input
                                         type="text"
-                                        className={formErrors.lastname.length > 0 ? "err-field" : null}
+                                        className={formErrors.lastname.length > 0 ? "err-field form-control" : "form-control"}
                                         placeholder="Last Name"
                                         name="lastname"
                                         noValidate
                                         onChange={this.onChange}
                                     />
                                     {formErrors.lastname.length > 0 && (
-                                        <span className="err-message">{formErrors.lastname}</span>
+                                        <span className="text-danger">{formErrors.lastname}</span>
                                     )}
                                 </div>
                             </div>
@@ -215,28 +238,28 @@ export default class Register extends Component {
                                     <label htmlFor="email">Choose Username</label>
                                     <input
                                         type="text"
-                                        className={formErrors.username.length > 0 ? "err-field" : null}
+                                        className={formErrors.username.length > 0 ? "err-field form-control" : "form-control"}
                                         placeholder="Choose Username"
                                         name="username"
                                         noValidate
                                         onChange={this.onChange}
                                     />
                                     {formErrors.username.length > 0 && (
-                                        <span className="err-message">{formErrors.username}</span>
+                                        <span className="text-danger">{formErrors.username}</span>
                                     )}
                                 </div>
                                 <div className="form-row">
                                     <label htmlFor="email">Email</label>
                                     <input
                                         type="text"
-                                        className={formErrors.email.length > 0 ? "err-field" : null}
+                                        className={formErrors.email.length > 0 ? "err-field form-control" : "form-control"}
                                         placeholder="Email"
                                         name="email"
                                         noValidate
                                         onChange={this.onChange}
                                     />
                                     {formErrors.email.length > 0 && (
-                                        <span className="err-message">{formErrors.email}</span>
+                                        <span className="text-danger">{formErrors.email}</span>
                                     )}
                                 </div>
                             </div>
@@ -245,25 +268,25 @@ export default class Register extends Component {
                                     <label htmlFor="contact">Contact Number</label>
                                     <input
                                         type="text"
-                                        className={formErrors.contact.length > 0 ? "err-field" : null}
+                                        className={formErrors.contact.length > 0 ? "err-field form-control" : "form-control"}
                                         placeholder="Contact Number"
                                         name="contact"
                                         noValidate
                                         onChange={this.onChange}
                                     />
                                     {formErrors.contact.length > 0 && (
-                                        <span className="err-message">{formErrors.contact}</span>
+                                        <span className="text-danger">{formErrors.contact}</span>
                                     )}
                                 </div>
                                 <div className="form-row">
                                     <label htmlFor="gender">Gender</label>
-                                    <select name="gender" className={formErrors.gender.length > 0 ? "err-field" : null} noValidate onChange={this.onChange}>
+                                    <select name="gender" className={formErrors.gender.length > 0 ? "err-field form-control" : "form-control"} noValidate onChange={this.onChange}>
                                         <option value="">Select Gender</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                     </select>
                                     {formErrors.gender.length > 0 && (
-                                        <span className="err-message">{formErrors.gender}</span>
+                                        <span className="text-danger">{formErrors.gender}</span>
                                     )}
                                 </div>
                             </div>
@@ -272,41 +295,44 @@ export default class Register extends Component {
                                     <label htmlFor="password">Password</label>
                                     <input
                                         type="password"
-                                        className={formErrors.password.length > 0 ? "err-field" : null}
+                                        className={formErrors.password.length > 0 ? "err-field form-control" : "form-control"}
                                         placeholder="Password"
                                         name="password"
                                         noValidate
                                         onChange={this.onChange}
                                     />
                                     {formErrors.password.length > 0 && (
-                                        <span className="err-message">{formErrors.password}</span>
+                                        <span className="text-danger">{formErrors.password}</span>
                                     )}
                                 </div>
                                 <div className="form-row">
                                     <label htmlFor="confpassword">Confirm Password</label>
                                     <input
                                         type="password"
-                                        className={formErrors.confpassword.length > 0 ? "err-field" : null}
+                                        className={formErrors.confpassword.length > 0 ? "err-field form-control" : "form-control"}
                                         placeholder="Confirm Password"
                                         name="confpassword"
                                         noValidate
                                         onChange={this.onChange}
                                     />
                                     {formErrors.confpassword.length > 0 && (
-                                        <span className="err-message">{formErrors.confpassword}</span>
+                                        <span className="text-danger">{formErrors.confpassword}</span>
                                     )}
                                 </div>
                             </div>
                             <div className="form-group">
                                 <div className="form-row">
-                                    <input type="submit" value="Signup" className="signin-btn" />
+                                    <input type="submit" value="Add User" className="btn btn-primary" />
                                 </div>
                             </div>
                         </form>
                     </div>
+                    <div>
+
+                    </div>
                 </div>
-                <div className="below-content">
-                    <div>Already have an account?<Link to="/"> Signin...</Link></div>
+                <div className="">
+                    <Footer />
                 </div>
             </div>
         )

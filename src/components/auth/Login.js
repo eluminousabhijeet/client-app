@@ -65,7 +65,7 @@ export default class Login extends Component {
         }
         this.setState({ formErrors, [name]: value });
         if (formValid(this.state)) {
-            fetch('http://localhost:5000/users/signin', {
+            fetch('http://localhost:5000/user/signin', {
                 method: "POST",
                 contentType: "application/json; charset=utf-8",
                 headers: {
