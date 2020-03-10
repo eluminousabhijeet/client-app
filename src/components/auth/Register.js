@@ -96,6 +96,78 @@ export default class Register extends Component {
         this.setState({ formErrors, [name]: value })
     }
 
+    onChangeUsername = (e) => {
+        e.preventDefault();
+        const { name, value } = e.target;
+        let formErrors = this.state.formErrors;
+        console.log(value);
+        const token = localStorage.getItem('admin_access_token');
+        fetch('http://localhost:5000/admin/check-username', {
+            method: "POST",
+            contentType: "application/json; charset=utf-8",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({
+                username: value,
+            })
+        }).then((response) => response.json())
+            .then((responseJson) => {
+                console.log(responseJson);
+                if (responseJson.success == 'false') {
+                    formErrors.username = "Username is already taken";
+                    this.setState({ formErrors, [name]: value })
+                } else {
+                    if (value.length < 3) {
+                        formErrors.username = "Minimum 3 characters required.";
+                    } else {
+                        formErrors.username = "";
+                    }
+                    this.setState({ formErrors, [name]: value })
+                    this.setState({
+                        errorMsg: responseJson.message
+                    })
+                }
+            });
+        this.setState({ formErrors, [name]: value })
+    }
+
+    onChangeEmail = (e) => {
+        e.preventDefault();
+        const { name, value } = e.target;
+        let formErrors = this.state.formErrors;
+        console.log(value);
+        const token = localStorage.getItem('admin_access_token');
+        fetch('http://localhost:5000/admin/check-email', {
+            method: "POST",
+            contentType: "application/json; charset=utf-8",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({
+                email: value,
+            })
+        }).then((response) => response.json())
+            .then((responseJson) => {
+                console.log(responseJson);
+                if (responseJson.success == 'false') {
+                    formErrors.email = "Email is already taken";
+                    this.setState({ formErrors, [name]: value })
+                } else {
+                    formErrors.email = "";
+                    this.setState({ formErrors, [name]: value })
+                    this.setState({
+                        errorMsg: responseJson.message
+                    })
+                }
+            });
+        this.setState({ formErrors, [name]: value })
+    }
+
     submitForm(e) {
         e.preventDefault();
         const { name, value } = e.target;
@@ -180,8 +252,8 @@ export default class Register extends Component {
                     <div className="form-div">
                         <div className="err-message auth-err">{this.state.errorMsg}</div>
                         <form onSubmit={this.submitForm}>
-                            <div className="row">
-                                <div className="col">
+                            <div className="form-group">
+                                <div className="form-row">
                                     <label htmlFor="firstname">First Name</label>
                                     <input
                                         type="text"
@@ -195,7 +267,7 @@ export default class Register extends Component {
                                         <span className="err-message">{formErrors.firstname}</span>
                                     )}
                                 </div>
-                                <div className="col">
+                                <div className="form-row">
                                     <label htmlFor="lastname">Last Name</label>
                                     <input
                                         type="text"
@@ -219,7 +291,7 @@ export default class Register extends Component {
                                         placeholder="Choose Username"
                                         name="username"
                                         noValidate
-                                        onChange={this.onChange}
+                                        onChange={this.onChangeUsername}
                                     />
                                     {formErrors.username.length > 0 && (
                                         <span className="err-message">{formErrors.username}</span>
@@ -233,7 +305,7 @@ export default class Register extends Component {
                                         placeholder="Email"
                                         name="email"
                                         noValidate
-                                        onChange={this.onChange}
+                                        onChange={this.onChangeEmail}
                                     />
                                     {formErrors.email.length > 0 && (
                                         <span className="err-message">{formErrors.email}</span>

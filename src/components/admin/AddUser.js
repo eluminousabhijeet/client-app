@@ -56,7 +56,7 @@ export default class AddUser extends Component {
     }
 
     onChange = e => {
-        // e.preventDefault();
+        e.preventDefault();
         const { name, value } = e.target;
         let formErrors = this.state.formErrors;
 
@@ -101,6 +101,78 @@ export default class AddUser extends Component {
                 break;
         }
 
+        this.setState({ formErrors, [name]: value })
+    }
+
+    onChangeUsername = (e) => {
+        e.preventDefault();
+        const { name, value } = e.target;
+        let formErrors = this.state.formErrors;
+        console.log(value);
+        const token = localStorage.getItem('admin_access_token');
+        fetch('http://localhost:5000/admin/check-username', {
+            method: "POST",
+            contentType: "application/json; charset=utf-8",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({
+                username: value,
+            })
+        }).then((response) => response.json())
+            .then((responseJson) => {
+                console.log(responseJson);
+                if (responseJson.success == 'false') {
+                    formErrors.username = "Username is already taken";
+                    this.setState({ formErrors, [name]: value })
+                } else {
+                    if (value.length < 3) {
+                        formErrors.username = "Minimum 3 characters required.";
+                    } else {
+                        formErrors.username = "";
+                    }
+                    this.setState({ formErrors, [name]: value })
+                    this.setState({
+                        errorMsg: responseJson.message
+                    })
+                }
+            });
+        this.setState({ formErrors, [name]: value })
+    }
+
+    onChangeEmail = (e) => {
+        e.preventDefault();
+        const { name, value } = e.target;
+        let formErrors = this.state.formErrors;
+        console.log(value);
+        const token = localStorage.getItem('admin_access_token');
+        fetch('http://localhost:5000/admin/check-email', {
+            method: "POST",
+            contentType: "application/json; charset=utf-8",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({
+                email: value,
+            })
+        }).then((response) => response.json())
+            .then((responseJson) => {
+                console.log(responseJson);
+                if (responseJson.success == 'false') {
+                    formErrors.email = "Email is already taken";
+                    this.setState({ formErrors, [name]: value })
+                } else {
+                    formErrors.email = "";
+                    this.setState({ formErrors, [name]: value })
+                    this.setState({
+                        errorMsg: responseJson.message
+                    })
+                }
+            });
         this.setState({ formErrors, [name]: value })
     }
 
@@ -188,7 +260,7 @@ export default class AddUser extends Component {
                 <div className="">
                     <Navbar />
                 </div>
-                <div className="container-fluid" style={{padding: "0em 10em 5em 10em"}}>
+                <div className="container" style={{ padding: "0em 10em 5em 10em" }}>
                     <div>
                         <form onSubmit={this.submitForm}>
                             <div className="form-row">
@@ -242,7 +314,7 @@ export default class AddUser extends Component {
                                         placeholder="Choose Username"
                                         name="username"
                                         noValidate
-                                        onChange={this.onChange}
+                                        onChange={this.onChangeUsername}
                                     />
                                     {formErrors.username.length > 0 && (
                                         <span className="text-danger">{formErrors.username}</span>
@@ -256,7 +328,7 @@ export default class AddUser extends Component {
                                         placeholder="Email"
                                         name="email"
                                         noValidate
-                                        onChange={this.onChange}
+                                        onChange={this.onChangeEmail}
                                     />
                                     {formErrors.email.length > 0 && (
                                         <span className="text-danger">{formErrors.email}</span>

@@ -6,6 +6,7 @@ import Register from './components/auth/Register';
 import Dashboard from './components/admin/Dashboard';
 import ManageUsers from './components/admin/ManageUsers';
 import ManageProducts from './components/admin/ManageProducts';
+import AddProduct from './components/admin/AddProduct';
 import Home from './components/auth/Home';
 import AddUser from './components/admin/AddUser';
 import './components/auth/style.scss';
@@ -22,6 +23,7 @@ export default class App extends Component {
             <Route exact path="/dashboard" component={Dashboard} />
             <Route exact path="/manage-users" component={ManageUsers} />
             <Route exact path="/manage-products" component={ManageProducts} />
+            <Route exact path="/add-product" component={AddProduct} />
             <Route exact path="/add-user" component={AddUser} />
             <Route exact path="/signup" component={Register} />
 
