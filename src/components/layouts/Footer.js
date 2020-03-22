@@ -1,22 +1,74 @@
-import React, { Component } from 'react';
-import '../auth/style.scss';
-
-const divStyle = {
-    position: 'fixed',
-    left: 0,
-    bottom: 0,
-    width: '100%',
-    background: '#e7e7e7',
-    color: '#777',
-    height: "4em",
-};
+import React, { Component } from 'react'
 
 export default class Footer extends Component {
-    render() {
-        return (
-            <div className="footer" style={divStyle}>
-                <p>Footer</p>
+  render() {
+    return (
+      <div>
+        <footer className="page-footer font-small bg-primary pt-4">
+
+          <div className="container-fluid text-center text-md-left">
+
+            <div className="row">
+              <div className="col-md-6 mt-md-0 mt-3 footer-h5">
+
+                <h5 className="text-uppercase">Footer Content</h5>
+                <p>Here you can use rows and columns to organize your footer content.</p>
+
+              </div>
+
+              {/* <hr className="clearfix w-100 d-md-none pb-3" /> */}
+
+              <div className="col-md-3 mb-md-0 mb-3">
+
+                <h5 className="text-uppercase">Links</h5>
+
+                <ul className="list-unstyled">
+                  <li>
+                    <a href="#!">Link 1</a>
+                  </li>
+                  <li>
+                    <a href="#!">Link 2</a>
+                  </li>
+                  <li>
+                    <a href="#!">Link 3</a>
+                  </li>
+                  <li>
+                    <a href="#!">Link 4</a>
+                  </li>
+                </ul>
+
+              </div>
+
+              <div className="col-md-3 mb-md-0 mb-3">
+
+                <h5 className="text-uppercase">Links</h5>
+
+                <ul className="list-unstyled">
+                  <li>
+                    <a href="#!">Link 1</a>
+                  </li>
+                  <li>
+                    <a href="#!">Link 2</a>
+                  </li>
+                  <li>
+                    <a href="#!">Link 3</a>
+                  </li>
+                  <li>
+                    <a href="#!">Link 4</a>
+                  </li>
+                </ul>
+
+              </div>
             </div>
-        )
-    }
+
+          </div>
+
+          <div className="footer-copyright text-center py-3">© 2020 Copyright:
+            <a href="https://mdbootstrap.com/"> MDBootstrap.com</a>
+          </div>
+
+        </footer>
+      </div>
+    )
+  }
 }
