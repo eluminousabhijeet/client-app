@@ -38,6 +38,7 @@ export default class Home extends Component {
             },
         }).then((response) => response.json())
             .then((responseJson) => {
+                console.log(responseJson);
                 if (responseJson.success == 'true') {
                     this.setState({
                         products: responseJson.products,

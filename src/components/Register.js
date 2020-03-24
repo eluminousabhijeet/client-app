@@ -138,7 +138,6 @@ export default class Register extends Component {
         e.preventDefault();
         const { name, value } = e.target;
         let formErrors = this.state.formErrors;
-        console.log(value);
         const token = localStorage.getItem('admin_access_token');
         fetch('http://localhost:5000/admin/check-email', {
             method: "POST",
@@ -214,7 +213,8 @@ export default class Register extends Component {
                     contact: this.state.contact,
                     gender: this.state.gender,
                     role: this.state.role,
-                    password: this.state.password
+                    password: this.state.password,
+                    status: 'active'
                 })
             }).then((response) => response.json())
                 .then((responseJson) => {

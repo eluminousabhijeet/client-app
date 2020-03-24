@@ -22,7 +22,7 @@ export default class Header extends Component {
             </div>
             <div className="collapse navbar-collapse" id="myNavbar">
               <ul className="nav navbar-nav">
-                {/* <li className="active"><a href="http://localhost:3000/home">Home</a></li> */}
+                <li className="active"><a href="http://localhost:3000/my-orders">My Orders</a></li>
                 {/* <li><a href="#">Page 1</a></li>
                 <li><a href="#">Page 2</a></li>
                 <li><a href="#">Page 3</a></li> */}

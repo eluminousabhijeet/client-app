@@ -11,10 +11,11 @@ export default class Products extends Component {
                     this.props.products.map(product => {
                         return <div className="col-md-4" key={product._id}>
                             <div className="thumbnail text-center">
-                                <a href="#"  >
+                                <a href={"http://localhost:3000/product/"+product.slug}  >
                                     <img src={product.image} alt={product.name} />
                                     <p className="product-title">{product.name}</p>
                                 </a>
+                                {/* <p className="product-title">slug: {product.name.toLowerCase().replace(/ /g, '-')}</p> */}
                                 <div>
                                     <b className="product-price">{util.formatCurrency(product.price)}</b>
                                     <button className="btn btn-primary" onClick={(e) => this.props.handleAddToCart(e, product)}>Add To Cart</button>

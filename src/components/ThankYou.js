@@ -16,7 +16,7 @@ export default class ThankYou extends Component {
                     <div className="row">
                         <div className="col-md-12">
                             <h4>Your order has been placed successfully.</h4>
-                            <p className="order-link-message">You can check your oders details <a href="#"><b>here...</b></a></p>
+                            <p className="order-link-message">You can check your oders details <a href="http://localhost:3000/my-orders"><b>here...</b></a></p>
                             <button className="btn btn-primary continue-shopping-btn" onClick={() => this.props.history.push('/home')}>Continue Shopping</button>
                         </div>
                     </div>
