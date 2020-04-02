@@ -95,14 +95,16 @@ export default class Home extends Component {
     }
 
     handleRemoveFromCart(e, item) {
-        this.setState(state => {
-            const cartItems = state.cartItems.filter(elm => elm._id !== item._id);
-            localStorage.setItem('cartItems', JSON.stringify(cartItems));
-            return { cartItems };
-        });
+        if (window.confirm('Are you sure to remove this item from cart?')) {
+            this.setState(state => {
+                const cartItems = state.cartItems.filter(elm => elm._id !== item._id);
+                localStorage.setItem('cartItems', JSON.stringify(cartItems));
+                return { cartItems };
+            });
+        }
     }
 
-    handleCheckoutButton(){
+    handleCheckoutButton() {
         this.props.history.push('/checkout');
     }
 
@@ -117,28 +119,28 @@ export default class Home extends Component {
         }
         return (
             // <Provider store={store}>
-                <div className="">
-                    <div className="header">
-                        <Header handleLogout={this.handleLogout} />
-                    </div>
-                    <div className="container-fluid">
-                        <h1>Ecommerce Shopping App</h1>
-                        <hr />
-                        <div className="row">
-                            <div className="col-md-8">
-                                <Filter count={this.state.filteredProducts.length} sort={this.state.sort} handleChangeSort={this.handleChangeSort} />
-                                <hr />
-                                <Products products={this.state.filteredProducts} handleAddToCart={this.handleAddToCart} />
-                            </div>
-                            <div className="col-md-4 cart-view">
-                                <CartBox cartItems={this.state.cartItems} handleRemoveFromCart={this.handleRemoveFromCart} handleCheckoutButton={this.handleCheckoutButton} />
-                            </div>
+            <div className="">
+                <div className="header">
+                    <Header handleLogout={this.handleLogout} />
+                </div>
+                <div className="container-fluid">
+                    <h1>Ecommerce Shopping App</h1>
+                    <hr />
+                    <div className="row">
+                        <div className="col-md-8">
+                            <Filter count={this.state.filteredProducts.length} sort={this.state.sort} handleChangeSort={this.handleChangeSort} />
+                            <hr />
+                            <Products products={this.state.filteredProducts} handleAddToCart={this.handleAddToCart} />
+                        </div>
+                        <div className="col-md-4 cart-view">
+                            <CartBox cartItems={this.state.cartItems} handleRemoveFromCart={this.handleRemoveFromCart} handleCheckoutButton={this.handleCheckoutButton} />
                         </div>
                     </div>
-                    <div className="">
-                        <Footer />
-                    </div>
                 </div>
+                <div className="">
+                    <Footer />
+                </div>
+            </div>
             // </Provider>
         )
     }

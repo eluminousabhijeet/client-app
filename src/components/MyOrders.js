@@ -63,16 +63,19 @@ export default class MyOrders extends Component {
                         <hr />
                         {
                             this.state.orders.map(order => {
-                                return <div className="row" key={order._id}>
-                                    <div className="col-md-2">
-                                        <img src={order.productId["image"]} alt={order.productId["name"]} className="product-image" />
+                                return <div>
+                                    <div className="row" key={order._id}>
+                                        <div className="col-md-2">
+                                            <img src={order.productId["image"]} alt={order.productId["name"]} className="product-image" />
+                                        </div>
+                                        <div>
+                                            <h4>{order.productId["name"]}</h4>
+                                            <p><b>Quantity:</b> {order.quantity}</p>
+                                            <h5><b>Total Price: </b>{util.formatCurrency(order.totalCost)}</h5>
+                                            <p>{order.createdOn}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4>{order.productId["name"]}</h4>
-                                        <p><b>Quantity:</b> {order.quantity}</p>
-                                        <h5><b>Total Price: </b>{util.formatCurrency(order.totalCost)}</h5>
-                                        <p>{order.createdOn}</p>
-                                    </div>
+                                    <hr />
                                 </div>
                             })
                         }

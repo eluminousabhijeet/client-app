@@ -48,7 +48,8 @@ export default class Checkout extends Component {
                 city: '',
             },
             cartItems: [],
-            userData: []
+            userData: [],
+            productData: []
         }
         this.onChange = this.onChange.bind(this);
         this.submitForm = this.submitForm.bind(this);
@@ -76,6 +77,28 @@ export default class Checkout extends Component {
                         email: responseJson.userdata[0].email,
                         contact: responseJson.userdata[0].contact,
                     });
+                } else {
+                    this.setState({
+                        errorMsg: responseJson.message
+                    })
+                }
+            });
+
+        const productSlug = this.props.match.params.slug;
+        fetch('http://localhost:5000/user/product-data/' + productSlug, {
+            method: "GET",
+            contentType: "application/json; charset=utf-8",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+        }).then((response) => response.json())
+            .then((responseJson) => {
+                if (responseJson.success == 'true') {
+                    this.setState({
+                        productData: responseJson.productData[0]
+                    })
                 } else {
                     this.setState({
                         errorMsg: responseJson.message
@@ -148,7 +171,7 @@ export default class Checkout extends Component {
         e.preventDefault();
         const { name, value } = e.target;
         let formErrors = this.state.formErrors;
-        const { firstname, lastname, email, contact, address1, address2, postcode, country, state, city } = this.state;
+        const { firstname, lastname, email, contact, address1, address2, postcode, country, state, city, productData } = this.state;
         if (firstname == "") {
             formErrors.firstname = "This is required.";
         }
@@ -188,7 +211,7 @@ export default class Checkout extends Component {
             var tempDate = new Date();
             var currDate = tempDate.getFullYear() + '-' + (tempDate.getMonth() + 1) + '-' + tempDate.getDate() + ' ' + tempDate.getHours() + ':' + tempDate.getMinutes() + ':' + tempDate.getSeconds();
             const userId = localStorage.getItem('current_user_id');
-            this.state.cartItems.forEach(item => {
+            if (this.props.match.params.slug) {
                 fetch('http://localhost:5000/user/place-order', {
                     method: "POST",
                     contentType: "application/json; charset=utf-8",
@@ -197,8 +220,8 @@ export default class Checkout extends Component {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        productId: item._id,
-                        quantity: item.count,
+                        productId: productData._id,
+                        quantity: this.props.match.params.qty,
                         userId: userId,
                         shippingName: this.state.firstname + ' ' + this.state.lastname,
                         shippingAddress: this.state.address1 + ', ' + this.state.address2,
@@ -206,7 +229,7 @@ export default class Checkout extends Component {
                         shippingCountry: this.state.country,
                         shippingState: this.state.state,
                         shippingCity: this.state.city,
-                        totalCost: item.price * item.count,
+                        totalCost: productData.price * this.props.match.params.qty,
                         createdOn: currDate,
                         status: 'active'
                     })
@@ -223,7 +246,45 @@ export default class Checkout extends Component {
                             })
                         }
                     });
-            });
+
+            } else {
+                this.state.cartItems.forEach(item => {
+                    fetch('http://localhost:5000/user/place-order', {
+                        method: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            productId: item._id,
+                            quantity: item.count,
+                            userId: userId,
+                            shippingName: this.state.firstname + ' ' + this.state.lastname,
+                            shippingAddress: this.state.address1 + ', ' + this.state.address2,
+                            shippingPostcode: this.state.postcode,
+                            shippingCountry: this.state.country,
+                            shippingState: this.state.state,
+                            shippingCity: this.state.city,
+                            totalCost: item.price * item.count,
+                            createdOn: currDate,
+                            status: 'active'
+                        })
+                    }).then((response) => response.json())
+                        .then((responseJson) => {
+                            let token = responseJson.token;
+                            console.log(responseJson);
+                            if (responseJson.success == 'true') {
+                                localStorage.setItem('cartItems', "");
+                                this.props.history.push('/thank-you');
+                            } else {
+                                this.setState({
+                                    errorMsg: responseJson.message
+                                })
+                            }
+                        });
+                });
+            }
         } else {
             console.log('error');
         }
@@ -239,7 +300,7 @@ export default class Checkout extends Component {
         if (userToken == "") {
             return <Redirect to="/" />
         }
-        const { cartItems, userData, formErrors } = this.state;
+        const { cartItems, userData, formErrors, productData } = this.state;
         return (
             <div className="">
                 <div className="header">
@@ -387,34 +448,69 @@ export default class Checkout extends Component {
                             </form>
                         </div>
                         <div className="col-md-4">
-                            <div className="alert alert-info">
-                                {
-                                    cartItems.length === 0 ? "Your cart is empty." : <div>You have {cartItems.length} products in your cart.</div>
-                                } <br />
-                                {
-                                    cartItems.length > 0 &&
-                                    <div>
-                                        <ul>
-                                            {
-                                                cartItems.map(item =>
-                                                    <li key={item._id}>
-                                                        <b>{item.name} X {item.count}</b>
-                                                    </li>
-                                                )
-                                            }
-                                        </ul>
-                                        <hr />
-                                        <table>
-                                            <thead></thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td className="cart-total" width="50%">Total: {util.formatCurrency(cartItems.reduce((a, c) => a + c.price * c.count, 0))}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                            {
+                                this.props.match.params.slug ?
+                                    <div className="alert alert-info">
+                                        {
+                                            !this.props.match.params.slug ? "You have no product to buy." : <div>Your product summery is as follows.</div>
+                                        } <br />
+                                        {
+                                            <div>
+                                                <table>
+                                                    <thead></thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><img src={productData.image} height="80px" width="80px" /></td>
+                                                            <td className="checkout-product-details">
+                                                                <h4>{productData.name}</h4>
+                                                                <p><b>Quantity: </b>{this.props.match.params.qty}</p>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                                <hr />
+                                                <table>
+                                                    <thead></thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td className="cart-total" width="50%">Total Amount: {util.formatCurrency(productData.price * this.props.match.params.qty)}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        }
                                     </div>
-                                }
-                            </div>
+                                    :
+
+                                    <div className="alert alert-info">
+                                        {
+                                            cartItems.length === 0 ? "Your cart is empty." : <div>You have {cartItems.length} products in your cart.</div>
+                                        } <br />
+                                        {
+                                            cartItems.length > 0 &&
+                                            <div>
+                                                <ul>
+                                                    {
+                                                        cartItems.map(item =>
+                                                            <li key={item._id}>
+                                                                <b>{item.name} X {item.count}</b>
+                                                            </li>
+                                                        )
+                                                    }
+                                                </ul>
+                                                <hr />
+                                                <table>
+                                                    <thead></thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td className="cart-total" width="50%">Total Amount: {util.formatCurrency(cartItems.reduce((a, c) => a + c.price * c.count, 0))}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        }
+                                    </div>
+                            }
                         </div>
                     </div>
                 </div>

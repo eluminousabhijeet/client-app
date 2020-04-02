@@ -2,6 +2,16 @@ import React, { Component } from 'react';
 import Header from './layouts/Header';
 import Footer from './layouts/Footer';
 import util from '../util';
+import {
+    Magnifier,
+    GlassMagnifier,
+    SideBySideMagnifier,
+    PictureInPictureMagnifier,
+    MOUSE_ACTIVATION,
+    TOUCH_ACTIVATION
+} from "react-image-magnifiers";
+import 'react-notifications/lib/notifications.css';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
 
 const formValid = ({ formErrors, ...rest }) => {
     let valid = true;
@@ -21,12 +31,14 @@ export default class SingleProduct extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            quantity: '',
+            quantity: 0,
             formErrors: {
                 quantity: '',
             },
+            qtyErr: '',
             productData: [],
-            cartItems: []
+            cartItems: [],
+            buyNowItem: []
         }
         this.onChange = this.onChange.bind(this);
         this.handleAddToCart = this.handleAddToCart.bind(this);
@@ -63,13 +75,34 @@ export default class SingleProduct extends Component {
         }
     }
 
+    createNotification = (type) => {
+        return () => {
+            switch (type) {
+                case 'info':
+                    NotificationManager.info('Info message');
+                    break;
+                case 'success':
+                    NotificationManager.success('Product added to your cart.', 'Success');
+                    break;
+                case 'warning':
+                    NotificationManager.warning('Warning message', 'Close after 3000ms', 3000);
+                    break;
+                case 'error':
+                    NotificationManager.error('Error message', 'Click me!', 5000, () => {
+                        alert('callback');
+                    });
+                    break;
+            }
+        };
+    };
+
     onChange = e => {
         const { name, value } = e.target;
         let formErrors = this.state.formErrors;
 
         switch (name) {
             case 'quantity':
-                formErrors.quantity = value <= 0 || value == "" ? 'Quantity should not be less than 1.' : "";
+                formErrors.quantity = value <= 0 || value == "" || value > 30 ? 'Quantity should be minimum 1 and maximum 30.' : "";
                 break;
             default:
                 break;
@@ -86,6 +119,9 @@ export default class SingleProduct extends Component {
 
         if (quantity == "") {
             formErrors.quantity = "This is required.";
+            this.setState({
+                qtyErr: ""
+            });
         }
         this.setState({ formErrors, [name]: value });
         if (formValid(this.state)) {
@@ -96,7 +132,7 @@ export default class SingleProduct extends Component {
                 cartItems.forEach(item => {
                     if (item._id === productData._id) {
                         itemAlreadyInCart = true;
-                        item.count = item.count + quantity;
+                        item.count = parseInt(item.count) + parseInt(quantity);
                     }
                 });
                 if (!itemAlreadyInCart) {
@@ -105,6 +141,20 @@ export default class SingleProduct extends Component {
                 localStorage.setItem("cartItems", JSON.stringify(cartItems));
                 return cartItems;
             })
+            document.getElementById("create-course-form").reset();
+            this.createNotification('success');
+        }
+    }
+
+    handleBuyNow = (e) => {
+        const { quantity, productData } = this.state;
+        let formErrors = this.state.formErrors;
+        if (quantity == "") {
+            this.setState({
+                qtyErr: "This is required."
+            });
+        } else {
+            this.props.history.push('/checkout/'+productData.slug+'/'+quantity);
         }
     }
 
@@ -119,7 +169,7 @@ export default class SingleProduct extends Component {
                 <div className="container single-product-section">
                     <div className="row">
                         <div className="col-md-4">
-                            <img src={productData.image} alt={productData.name} className="product-image" />
+                            <img src={productData.image} alt={productData.name} className="single-product-image" />
                         </div>
                         <div className="col-md-5">
                             <h2>{productData.name}</h2>
@@ -128,8 +178,8 @@ export default class SingleProduct extends Component {
                             <p>{productData.description}</p>
                         </div>
                         <div className="col-md-3 single-product-buy-section">
-                            <div class="buy-sec-input-div">
-                                <form onSubmit={this.handleAddToCart}>
+                            <div className="buy-sec-input-div">
+                                <form onSubmit={this.handleAddToCart} id="create-course-form">
                                     <input
                                         type="number"
                                         className="form-control single-quantity-input"
@@ -137,15 +187,22 @@ export default class SingleProduct extends Component {
                                         name="quantity"
                                         noValidate
                                         min="1"
+                                        max="30"
                                         title="Qty"
+                                        ref="quantity"
                                         onChange={this.onChange}
                                     />
                                     {formErrors.quantity.length > 0 && (
                                         <span className="text-danger">{formErrors.quantity}</span>
                                     )}
-                                    <input type="submit" value="Add To Cart" class="btn btn-primary btn-block single-cart-btn" />
-                                    <button class="btn btn-warning btn-block">Buy Now</button>
+                                    {
+                                        this.state.qtyErr.length > 0 && (
+                                            <span className="text-danger">{this.state.qtyErr}</span>
+                                        )
+                                    }
+                                    <input type="submit" value="Add To Cart" className="btn btn-primary btn-block single-cart-btn" />
                                 </form>
+                                <button className="btn btn-warning btn-block" onClick={this.handleBuyNow}>Buy Now</button>
                             </div>
                         </div>
                     </div>
