@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import util from '../util';
+import { connect } from 'react-redux';
+import { removeFromCart } from '../actions/cartActions';
 
-export default class CartBox extends Component {
+class CartBox extends Component {
     render() {
         const { cartItems } = this.props;
-        const { history } = this.props;
         return (
             <div className="alert alert-info">
                 {
@@ -23,7 +24,7 @@ export default class CartBox extends Component {
                                             <td width="90%"><b>{item.name} X {item.count}</b></td>
                                             <td width="10%"><button
                                                 className="btn btn-danger"
-                                                onClick={(e) => this.props.handleRemoveFromCart(e, item)}>
+                                                onClick={() => this.props.removeFromCart(this.props.cartItems, item)}>
                                                 X
                                             </button>
                                             </td>
@@ -36,7 +37,7 @@ export default class CartBox extends Component {
                         <hr />
                         <table>
                             <tr>
-                                <td className="cart-total" width="50%">Total: {util.formatCurrency(cartItems.reduce((a, c) => a + c.price * c.count, 0))}</td>
+                                <td className="cart-total" width="60%">Total Amount: {util.formatCurrency(cartItems.reduce((a, c) => a + c.price * c.count, 0))}</td>
                                 <td><button className="btn btn-primary" onClick={this.props.handleCheckoutButton}>Proceed To Checkout</button></td>
                             </tr>
                         </table>
@@ -46,3 +47,9 @@ export default class CartBox extends Component {
         )
     }
 }
+
+const mapStateToProps = state => ({ 
+    cartItems: state.cart.items
+});
+
+export default connect(mapStateToProps, { removeFromCart })(CartBox);

@@ -3,6 +3,8 @@ import { Link, Redirect } from 'react-router-dom';
 import Header from './layouts/Header';
 import Footer from './layouts/Footer';
 import util from '../util';
+import { connect } from 'react-redux';
+import { removeFromCart, increaseCount, decreaseCount } from '../actions/cartActions';
 
 const emailRegx = RegExp(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/);
 const phoneRegx = RegExp(/^[0]?[789]\d{9}$/);
@@ -21,7 +23,7 @@ const formValid = ({ formErrors, ...rest }) => {
     return valid;
 }
 
-export default class Checkout extends Component {
+class Checkout extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -106,11 +108,11 @@ export default class Checkout extends Component {
                 }
             });
 
-        if (localStorage.getItem('cartItems')) {
-            this.setState({
-                cartItems: JSON.parse(localStorage.getItem('cartItems'))
-            })
-        }
+        // if (localStorage.getItem('cartItems')) {
+        //     this.setState({
+        //         cartItems: JSON.parse(localStorage.getItem('cartItems'))
+        //     })
+        // }
         // console.log(JSON.parse(localStorage.getItem('cartItems')));
     }
 
@@ -248,7 +250,7 @@ export default class Checkout extends Component {
                     });
 
             } else {
-                this.state.cartItems.forEach(item => {
+                this.props.cartItems.forEach(item => {
                     fetch('http://localhost:5000/user/place-order', {
                         method: "POST",
                         contentType: "application/json; charset=utf-8",
@@ -300,7 +302,8 @@ export default class Checkout extends Component {
         if (userToken == "") {
             return <Redirect to="/" />
         }
-        const { cartItems, userData, formErrors, productData } = this.state;
+        const { userData, formErrors, productData } = this.state;
+        const { cartItems } = this.props;
         return (
             <div className="">
                 <div className="header">
@@ -521,3 +524,9 @@ export default class Checkout extends Component {
         )
     }
 }
+
+const mapStateToProps = state => ({
+    cartItems: state.cart.items
+});
+
+export default connect(mapStateToProps)(Checkout);

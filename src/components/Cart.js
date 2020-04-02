@@ -2,65 +2,16 @@ import React, { Component } from 'react';
 import Header from './layouts/Header';
 import Footer from './layouts/Footer';
 import util from '../util';
+import { connect } from 'react-redux';
+import { removeFromCart, increaseCount, decreaseCount } from '../actions/cartActions';
 
-export default class Cart extends Component {
+class Cart extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            cartItems: []
-        }
-    }
-
-    componentDidMount() {
-        if (localStorage.getItem('cartItems')) {
-            this.setState({
-                cartItems: JSON.parse(localStorage.getItem('cartItems'))
-            })
-        }
-    }
-
-    handleIncreaseQuantity = (e, item) => {
-        this.setState(state => {
-            const cartItems = state.cartItems;
-            cartItems.forEach(product => {
-                if (product._id === item._id) {
-                    if(product.count < 30){
-                        product.count++;
-                    }
-                }
-            });
-            localStorage.setItem("cartItems", JSON.stringify(cartItems));
-            return cartItems;
-        })
-    }
-
-    handleDecreaseQuantity = (e, item) => {
-        this.setState(state => {
-            const cartItems = state.cartItems;
-            cartItems.forEach(product => {
-                if (product._id === item._id) {
-                    if (product.count > 1) {
-                        product.count--;
-                    }
-                }
-            });
-            localStorage.setItem("cartItems", JSON.stringify(cartItems));
-            return cartItems;
-        })
-    }
-
-    handleRemoveFromCart = (e, item) => {
-        if (window.confirm('Are you sure to remove this item from cart?')) {
-            this.setState(state => {
-                const cartItems = state.cartItems.filter(elm => elm._id !== item._id);
-                localStorage.setItem('cartItems', JSON.stringify(cartItems));
-                return { cartItems };
-            });
-        }
     }
 
     render() {
-        const { cartItems } = this.state;
+        const { cartItems } = this.props;
         return (
             <div className="">
                 <div className="header">
@@ -85,13 +36,13 @@ export default class Cart extends Component {
                                                 <p className="cart-product-name"><a href={"http://localhost:3000/product/"+item.slug}>{item.name}</a></p>
                                                 <h3 className="cart-product-price">{util.formatCurrency(item.price * item.count)}</h3>
                                                 <div className="cart-quantity-wrapper">
-                                                    <button className="quantity-minus-button" onClick={(e) => this.handleDecreaseQuantity(e, item)}> - </button>
+                                                    <button className="quantity-minus-button" onClick={() => this.props.decreaseCount(this.props.cartItems, item)}> - </button>
                                                     <input type="text" value={item.count} class="cart-quantity-box" />
-                                                    <button className="quantity-plus-button" onClick={(e) => this.handleIncreaseQuantity(e, item)}> + </button>
+                                                    <button className="quantity-plus-button" onClick={() => this.props.increaseCount(this.props.cartItems, item)}> + </button>
                                                 </div>
                                                 <div className="cart-remove-btn-section">
                                                     <a href="#" className="save-for-later-btn">SAVE FOR LATER</a>
-                                                    <a className="cart-remove-btn" onClick={(e) => this.handleRemoveFromCart(e, item)}>REMOVE</a>
+                                                    <a className="cart-remove-btn" onClick={() => this.props.removeFromCart(this.props.cartItems, item)}>REMOVE</a>
                                                 </div>
                                             </div>
                                         </div> <hr />
@@ -136,3 +87,9 @@ export default class Cart extends Component {
         )
     }
 }
+
+const mapStateToProps = state => ({ 
+    cartItems: state.cart.items
+});
+
+export default connect(mapStateToProps, { removeFromCart, increaseCount, decreaseCount })(Cart);

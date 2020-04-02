@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
 import util from '../util';
-// import { connect } from 'react-redux';
-// import { fetchProducts } from '../actions/productActions';
+import { connect } from 'react-redux';
+import { fetchProducts } from '../actions/productActions';
+import { addToCart } from '../actions/cartActions';
 
-export default class Products extends Component {
+class Products extends Component {
+    UNSAFE_componentWillMount(){
+        this.props.fetchProducts();
+    }
     render() {
         return (
             <div className="row">
@@ -15,10 +19,9 @@ export default class Products extends Component {
                                     <img src={product.image} alt={product.name} />
                                     <p className="product-title">{product.name}</p>
                                 </a>
-                                {/* <p className="product-title">slug: {product.name.toLowerCase().replace(/ /g, '-')}</p> */}
                                 <div>
                                     <b className="product-price">{util.formatCurrency(product.price)}</b>
-                                    <button className="btn btn-primary" onClick={(e) => this.props.handleAddToCart(e, product)}>Add To Cart</button>
+                                    <button className="btn btn-primary" onClick={() => this.props.addToCart(this.props.cartItems, product)}>Add To Cart</button>
                                 </div>
                             </div>
                         </div>
@@ -28,6 +31,11 @@ export default class Products extends Component {
         )
     }
 }
-// const mapStateToProps = state => ({ products: state.products.item });
 
-// export default connect(mapStateToProps, { fetchProducts })(Products);
+const mapStateToProps = state => ({ 
+    products: state.products.sortedItems,
+    sort: state.products.sort,
+    cartItems: state.cart.items
+});
+
+export default connect(mapStateToProps, { fetchProducts, addToCart })(Products);
